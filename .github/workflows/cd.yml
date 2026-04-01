@@ -2,7 +2,6 @@ name: CD — Build & Push Docker Image
 
 on:
   push:
-    branches: [main]
     tags:
       - "v*.*.*"
 
