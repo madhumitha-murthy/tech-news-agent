@@ -1,13 +1,11 @@
 # fetcher.py — Fetch articles from all sources
 
 import feedparser
-import requests
-import praw
 import arxiv
 import os
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
-from config import RSS_FEEDS, ARXIV_CATEGORIES, ARXIV_MAX_RESULTS, REDDIT_SUBREDDITS, REDDIT_POST_LIMIT
+from config import RSS_FEEDS, ARXIV_MAX_RESULTS
 
 load_dotenv()
 
@@ -56,32 +54,6 @@ def fetch_arxiv():
     return articles
 
 
-def fetch_reddit():
-    """Fetch top posts from ML/AI subreddits."""
-    articles = []
-    try:
-        reddit = praw.Reddit(
-            client_id=os.getenv("REDDIT_CLIENT_ID"),
-            client_secret=os.getenv("REDDIT_CLIENT_SECRET"),
-            user_agent=os.getenv("REDDIT_USER_AGENT", "tech-news-agent/1.0"),
-        )
-        for subreddit_name in REDDIT_SUBREDDITS:
-            subreddit = reddit.subreddit(subreddit_name)
-            for post in subreddit.hot(limit=REDDIT_POST_LIMIT):
-                if not post.stickied:
-                    articles.append({
-                        "source": f"Reddit r/{subreddit_name}",
-                        "title": post.title,
-                        "link": f"https://reddit.com{post.permalink}",
-                        "summary": post.selftext[:300] if post.selftext else post.title,
-                        "published": str(datetime.fromtimestamp(post.created_utc)),
-                    })
-    except Exception as e:
-        print(f"[fetcher] Reddit error: {e}")
-
-    return articles
-
-
 def fetch_all():
     """Fetch from all sources and return combined list."""
     print("[fetcher] Fetching from RSS feeds...")
@@ -90,9 +62,6 @@ def fetch_all():
     print("[fetcher] Fetching from ArXiv...")
     arxiv_articles = fetch_arxiv()
 
-    print("[fetcher] Fetching from Reddit...")
-    reddit = fetch_reddit()
-
-    all_articles = rss + arxiv_articles + reddit
+    all_articles = rss + arxiv_articles
     print(f"[fetcher] Total fetched: {len(all_articles)} articles")
     return all_articles

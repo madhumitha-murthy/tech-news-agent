@@ -1,8 +1,8 @@
 # 🤖 Tech News Agent
 
-![CI](https://github.com/YOUR_GITHUB_USERNAME/tech-news-agent/actions/workflows/ci.yml/badge.svg)
-![CD](https://github.com/YOUR_GITHUB_USERNAME/tech-news-agent/actions/workflows/cd.yml/badge.svg)
-![Python](https://img.shields.io/badge/python-3.11-blue)
+![CI](https://github.com/madhumitha-murthy/tech-news-agent/actions/workflows/ci.yml/badge.svg)
+![CD](https://github.com/madhumitha-murthy/tech-news-agent/actions/workflows/cd.yml/badge.svg)
+![Python](https://img.shields.io/badge/python-3.12-blue)
 ![Docker](https://img.shields.io/badge/docker-ready-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
@@ -12,10 +12,12 @@ An end-to-end **agentic AI pipeline** that fetches, filters, summarises, and del
 
 ## Features
 
-- **Multi-source fetching** — ArXiv, HackerNews, TechCrunch, VentureBeat, Anthropic/OpenAI/DeepMind blogs, Reddit
+- **Multi-source fetching** — ArXiv, HackerNews, TechCrunch, VentureBeat, Anthropic/OpenAI/DeepMind blogs
 - **Smart filtering** — keyword-based relevance scoring across Agentic AI, LLMs, NLP, Singapore tech
-- **AI summarisation** — Gemini 1.5 Flash (free tier) generates 2–3 line summaries per article
-- **Beautiful HTML email** — styled digest delivered via Gmail SMTP at 11:55 PM daily
+- **AI summarisation** — Gemini 2.0 Flash (free tier) generates 2–3 line summaries per article
+- **Beautiful HTML email** — styled digest delivered via Gmail SMTP at 11:55 PM SGT daily
+- **RAG query interface** — ask questions over stored articles using semantic search + Gemini
+- **Vector store** — ChromaDB + Sentence Transformers for local semantic search
 - **Pipeline metrics** — tracks fetch counts, filter rates, summary success, delivery status
 - **Evaluation report** — historical analysis across all runs
 - **Fully containerised** — Docker + Kubernetes CronJob ready
@@ -31,16 +33,18 @@ An end-to-end **agentic AI pipeline** that fetches, filters, summarises, and del
 │                                                     │
 │  ┌──────────┐   ┌──────────┐   ┌────────────────┐  │
 │  │ Fetcher  │──▶│  Filter  │──▶│  Summariser    │  │
-│  │          │   │          │   │  (Gemini API)  │  │
+│  │          │   │          │   │  (Gemini 2.0)  │  │
 │  │ ArXiv    │   │ Keyword  │   └───────┬────────┘  │
 │  │ RSS Feeds│   │ Scoring  │           │           │
-│  │ Reddit   │   │ Top N    │   ┌───────▼────────┐  │
-│  └──────────┘   └──────────┘   │    Emailer     │  │
-│                                │  (Gmail SMTP)  │  │
-│  ┌──────────────────────────┐  └───────┬────────┘  │
-│  │  Metrics Tracker         │          │           │
-│  │  + Evaluator             │◀─────────┘           │
-│  └──────────────────────────┘                      │
+│  │ HN/TC/VB │   │ Top N    │   ┌───────▼────────┐  │
+│  └──────────┘   └──────────┘   │    Storer      │  │
+│                                │  (ChromaDB)    │  │
+│                                └───────┬────────┘  │
+│  ┌──────────────────────────┐          │           │
+│  │  RAG Query Interface     │   ┌───────▼────────┐  │
+│  │  query.py                │   │    Emailer     │  │
+│  │  Retriever + Gemini      │   │  (Gmail SMTP)  │  │
+│  └──────────────────────────┘   └────────────────┘  │
 │                                                     │
 │  Scheduler: APScheduler / K8s CronJob (11:55 PM SGT)│
 └─────────────────────────────────────────────────────┘
@@ -52,9 +56,11 @@ An end-to-end **agentic AI pipeline** that fetches, filters, summarises, and del
 
 | Layer | Technology |
 |---|---|
-| Language | Python 3.11 |
-| AI Summarisation | Google Gemini 1.5 Flash (free) |
-| News Sources | feedparser, arxiv, praw (Reddit) |
+| Language | Python 3.12 |
+| AI Summarisation & QA | Google Gemini 2.0 Flash (free tier) |
+| News Sources | feedparser, arxiv |
+| Vector Store | ChromaDB (local, persistent) |
+| Embeddings | Sentence Transformers (all-MiniLM-L6-v2) |
 | Email Delivery | Gmail SMTP (smtplib) |
 | Scheduling | APScheduler / Kubernetes CronJob |
 | Containerisation | Docker (multi-stage build) |
@@ -69,7 +75,7 @@ An end-to-end **agentic AI pipeline** that fetches, filters, summarises, and del
 
 ### 1. Clone & set up virtual environment
 ```bash
-git clone https://github.com/YOUR_GITHUB_USERNAME/tech-news-agent.git
+git clone https://github.com/madhumitha-murthy/tech-news-agent.git
 cd tech-news-agent
 make install
 source venv/bin/activate
@@ -86,9 +92,37 @@ cp .env.example .env
 python main.py
 ```
 
-### 4. Run on schedule (11:55 PM daily)
+### 4. Run on schedule (11:55 PM SGT daily)
 ```bash
 python scheduler.py
+```
+
+### 5. Query articles on demand (RAG)
+```bash
+python query.py
+```
+```
+🤖 Tech News Agent — RAG Query Interface
+Type your question or 'quit' to exit.
+
+❓ Ask: what is the latest on agentic AI?
+
+🔍 Searching for: 'what is the latest on agentic AI?'
+📚 Found 5 relevant articles
+
+==============================================================
+💬 Answer:
+==============================================================
+Based on recent articles, agentic AI is advancing rapidly [1][2].
+Salesforce launched a new Slackbot AI agent [1], while Anthropic
+released Cowork, a Claude Desktop agent for file management [2]...
+
+==============================================================
+📰 Sources:
+==============================================================
+[1] Salesforce rolls out new Slackbot AI agent...
+    TechCrunch AI | Score: 0.91
+    https://techcrunch.com/...
 ```
 
 ---
@@ -98,8 +132,9 @@ python scheduler.py
 | Key | Where to get | Cost |
 |---|---|---|
 | `GEMINI_API_KEY` | [aistudio.google.com](https://aistudio.google.com/app/apikey) | Free |
+| `GMAIL_ADDRESS` | Your Gmail address | Free |
 | `GMAIL_APP_PASSWORD` | Google Account → Security → 2FA → App Passwords | Free |
-| `REDDIT_CLIENT_ID/SECRET` | [reddit.com/prefs/apps](https://www.reddit.com/prefs/apps) | Free |
+| `RECIPIENT_EMAIL` | Email to receive the digest | Free |
 
 ---
 
@@ -180,10 +215,14 @@ make format        # auto-format
 ```
 tech-news-agent/
 ├── agents/
-│   ├── fetcher.py          # fetch from ArXiv, RSS, Reddit
+│   ├── fetcher.py          # fetch from ArXiv & RSS feeds
 │   ├── filter.py           # keyword scoring & ranking
-│   ├── summariser.py       # Gemini API summarisation
+│   ├── summariser.py       # Gemini 2.0 Flash summarisation
+│   ├── storer.py           # embed & store articles in ChromaDB
+│   ├── retriever.py        # semantic search over stored articles
 │   └── emailer.py          # HTML email via Gmail SMTP
+├── vectorstore/            # persistent ChromaDB vector store
+├── query.py                # RAG query CLI interface
 ├── metrics/
 │   ├── tracker.py          # per-run metrics collection
 │   ├── evaluator.py        # historical evaluation report
@@ -213,6 +252,7 @@ tech-news-agent/
 
 ## Roadmap
 
+- [ ] Reddit source integration
 - [ ] Telegram bot delivery option
 - [ ] Web dashboard for metrics visualisation
 - [ ] Personalisation based on reading history
@@ -224,3 +264,5 @@ tech-news-agent/
 
 **Madhumitha Murthy** — MSc EEE, NTU Singapore
 ML/AI Engineer | NLP | Agentic AI
+
+[![GitHub](https://img.shields.io/badge/GitHub-madhumitha--murthy-black?logo=github)](https://github.com/madhumitha-murthy)

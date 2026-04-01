@@ -7,6 +7,7 @@ from agents.fetcher import fetch_all
 from agents.filter import filter_articles
 from agents.summariser import summarise_all
 from agents.emailer import send_email
+from agents.storer import store_articles
 from metrics.tracker import PipelineMetrics
 
 load_dotenv()
@@ -46,7 +47,11 @@ def run():
         duration_sec=summarise_duration,
     )
 
-    # Step 4: Send Email
+    # Step 4: Store in vector DB for RAG queries
+    print("[main] Storing articles in vector database...")
+    store_articles(summarised)
+
+    # Step 5: Send Email
     email_ok = False
     try:
         send_email(summarised)
