@@ -1,0 +1,10 @@
+# k8s/configmap.yaml — Non-sensitive configuration
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tech-news-agent-config
+  namespace: default
+data:
+  REDDIT_USER_AGENT: "tech-news-agent/1.0"
+  TZ: "Asia/Singapore"

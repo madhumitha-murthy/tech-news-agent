@@ -1,0 +1,24 @@
+version: "3.9"
+
+services:
+  tech-news-agent:
+    build: .
+    container_name: tech-news-agent
+    env_file:
+      - .env
+    volumes:
+      - ./metrics/data:/app/metrics/data   # persist metrics logs
+    restart: unless-stopped
+    command: python scheduler.py
+
+  # Run pipeline once manually (for testing)
+  tech-news-agent-run-once:
+    build: .
+    container_name: tech-news-agent-once
+    env_file:
+      - .env
+    volumes:
+      - ./metrics/data:/app/metrics/data
+    command: python main.py
+    profiles:
+      - run-once

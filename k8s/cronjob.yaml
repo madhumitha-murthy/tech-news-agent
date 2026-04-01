@@ -1,0 +1,34 @@
+# k8s/cronjob.yaml — Run the pipeline daily at 11:55 PM SGT (UTC+8 = 15:55 UTC)
+
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: tech-news-agent
+  namespace: default
+spec:
+  schedule: "55 15 * * *"   # 11:55 PM SGT = 15:55 UTC
+  timeZone: "Asia/Singapore"
+  concurrencyPolicy: Forbid   # don't run if previous is still running
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: tech-news-agent
+              image: ghcr.io/YOUR_GITHUB_USERNAME/tech-news-agent:latest
+              imagePullPolicy: Always
+              command: ["python", "main.py"]
+              envFrom:
+                - secretRef:
+                    name: tech-news-agent-secrets
+                - configMapRef:
+                    name: tech-news-agent-config
+              volumeMounts:
+                - name: metrics-storage
+                  mountPath: /app/metrics/data
+          volumes:
+            - name: metrics-storage
+              emptyDir: {}
