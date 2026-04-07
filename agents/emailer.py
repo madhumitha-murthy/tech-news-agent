@@ -1,11 +1,13 @@
 # emailer.py — Format and send the daily digest via Gmail SMTP
 
-import smtplib
 import os
+import smtplib
+from datetime import datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from datetime import datetime
+
 from dotenv import load_dotenv
+
 from config import EMAIL_SUBJECT
 
 load_dotenv()

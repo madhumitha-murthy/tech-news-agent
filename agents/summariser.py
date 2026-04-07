@@ -2,7 +2,7 @@
 
 import os
 import time
-from google import genai
+
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -12,6 +12,8 @@ MODEL = "gemini-2.0-flash"
 
 def summarise_article(article):
     """Generate a 2-3 line summary of an article using Gemini."""
+    from google import genai  # lazy import — avoids CI import errors
+
     client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
     prompt = f"""Summarize the following tech/AI article in exactly 2-3 concise sentences.
 Focus on: what it is, why it matters, and any key numbers or facts.

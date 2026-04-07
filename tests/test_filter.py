@@ -1,11 +1,11 @@
 # tests/test_filter.py
 
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
-from agents.filter import score_article, filter_articles
-
+from agents.filter import filter_articles, score_article
 
 SAMPLE_ARTICLES = [
     {"title": "New LLM from OpenAI beats GPT-4", "summary": "OpenAI releases a new large language model."},
@@ -48,6 +48,7 @@ def test_filter_respects_top_n(monkeypatch):
     monkeypatch.setattr(config, "TOP_N", 2)
     # reload filter to pick up patched TOP_N
     import importlib
+
     import agents.filter as f_module
     importlib.reload(f_module)
     results = f_module.filter_articles(SAMPLE_ARTICLES * 10)

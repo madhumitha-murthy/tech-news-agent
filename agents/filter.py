@@ -1,6 +1,6 @@
 # filter.py — Filter articles by relevance to defined topics
 
-from config import TOPICS, TOP_N
+from config import TOP_N, TOPICS
 
 
 def score_article(article):

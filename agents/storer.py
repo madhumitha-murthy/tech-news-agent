@@ -1,9 +1,10 @@
 # storer.py — Store articles in ChromaDB vector store
 
-import chromadb
-from chromadb.utils import embedding_functions
 from datetime import datetime
 from pathlib import Path
+
+import chromadb
+from chromadb.utils import embedding_functions
 
 DB_PATH = str(Path(__file__).parent.parent / "vectorstore")
 COLLECTION_NAME = "tech_news"

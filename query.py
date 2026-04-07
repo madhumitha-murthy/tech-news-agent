@@ -1,10 +1,11 @@
 # query.py — Interactive CLI to query stored articles using RAG
 
 import os
+
 from dotenv import load_dotenv
-from google import genai
+
 from agents.retriever import retrieve
-from metrics.relevance_drift import log_query_scores, check_relevance_drift
+from metrics.relevance_drift import check_relevance_drift, log_query_scores
 
 load_dotenv()
 
@@ -29,6 +30,8 @@ User question: {query}
 Answer:"""
 
     try:
+        from google import genai  # lazy import — avoids CI import errors
+
         client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
         response = client.models.generate_content(model=MODEL, contents=prompt)
         return response.text.strip()

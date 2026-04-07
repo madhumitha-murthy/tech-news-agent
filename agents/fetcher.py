@@ -1,18 +1,17 @@
 # fetcher.py — Fetch articles from all sources
 
-import feedparser
+
 import arxiv
-import os
-from datetime import datetime, timedelta
+import feedparser
 from dotenv import load_dotenv
-from config import RSS_FEEDS, ARXIV_MAX_RESULTS
+
+from config import ARXIV_MAX_RESULTS, RSS_FEEDS
 
 load_dotenv()
 
 def fetch_rss_feeds():
     """Fetch articles from all RSS feeds."""
     articles = []
-    cutoff = datetime.now() - timedelta(hours=24)
 
     for source, url in RSS_FEEDS.items():
         try:

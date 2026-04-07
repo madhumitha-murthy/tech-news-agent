@@ -1,20 +1,22 @@
 # tests/test_metrics.py
 
-import sys
-import os
 import json
+import os
+import sys
 import tempfile
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
-from unittest.mock import patch
 from pathlib import Path
+from unittest.mock import patch
 
 
 def test_pipeline_metrics_saves_file():
     with tempfile.TemporaryDirectory() as tmpdir:
         with patch("metrics.tracker.METRICS_DIR", Path(tmpdir)):
-            from metrics.tracker import PipelineMetrics
-            import importlib, metrics.tracker as m
+            import importlib
+
+            import metrics.tracker as m
             importlib.reload(m)
             m.METRICS_DIR = Path(tmpdir)
 

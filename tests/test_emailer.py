@@ -1,12 +1,13 @@
 # tests/test_emailer.py
 
-import sys
 import os
+import sys
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
-from unittest.mock import patch, MagicMock
-from agents.emailer import build_html, send_email
+from unittest.mock import MagicMock, patch
 
+from agents.emailer import build_html, send_email
 
 SAMPLE_ARTICLES = [
     {

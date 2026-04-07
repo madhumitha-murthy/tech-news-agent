@@ -30,7 +30,6 @@ import os
 from datetime import datetime, timezone
 from pathlib import Path
 from statistics import mean, stdev
-from typing import Optional
 
 METRICS_DIR = Path(__file__).parent / "data"
 BASELINE_RUNS = int(os.getenv("DRIFT_BASELINE_RUNS", "5"))    # runs used to build baseline

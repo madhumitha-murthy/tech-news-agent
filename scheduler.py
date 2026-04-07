@@ -1,6 +1,7 @@
 # scheduler.py — Run the pipeline daily at 11:55 PM
 
 from apscheduler.schedulers.blocking import BlockingScheduler
+
 from config import SCHEDULE_HOUR, SCHEDULE_MINUTE
 from main import run
 

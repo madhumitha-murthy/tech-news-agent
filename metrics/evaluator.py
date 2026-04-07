@@ -2,7 +2,6 @@
 
 import json
 from pathlib import Path
-from datetime import datetime
 
 METRICS_DIR = Path(__file__).parent / "data"
 
