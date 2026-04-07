@@ -4,6 +4,7 @@ import os
 from dotenv import load_dotenv
 from google import genai
 from agents.retriever import retrieve
+from metrics.relevance_drift import log_query_scores, check_relevance_drift
 
 load_dotenv()
 
@@ -48,6 +49,14 @@ def run_query(query: str):
         return
 
     print(f"📚 Found {len(articles)} relevant articles\n")
+
+    # Log retrieval scores and check for relevance drift
+    scores = [a["score"] for a in articles]
+    log_query_scores(query, scores)
+    drift = check_relevance_drift()
+    if drift["drift_detected"]:
+        print(f"⚠️  [drift] {drift['message']}")
+        print(f"   → {drift['recommendation']}\n")
 
     answer = generate_answer(query, articles)
 
