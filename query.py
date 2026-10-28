@@ -4,7 +4,7 @@ import os
 
 from dotenv import load_dotenv
 
-from agents.retriever import retrieve
+from pipeline.retriever import retrieve
 from metrics.relevance_drift import check_relevance_drift, log_query_scores
 
 load_dotenv()

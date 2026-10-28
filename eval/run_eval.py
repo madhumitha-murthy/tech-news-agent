@@ -47,7 +47,7 @@ def compute_metrics(records: list[dict]) -> dict:
 
 def main():
     load_dotenv()
-    from agents.storer import get_collection
+    from pipeline.storer import get_collection
     from research_agent.graph import MAX_TOOL_CALLS, build_agent, run_question
     from research_agent.grounding import ANSWER_THRESHOLD, SENT_THRESHOLD
     from research_agent.llm import DEFAULT_MODEL, GeminiModel

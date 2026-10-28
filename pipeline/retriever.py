@@ -1,6 +1,6 @@
 # retriever.py — Semantic search over stored articles using ChromaDB
 
-from agents.storer import get_collection
+from pipeline.storer import get_collection
 
 
 def retrieve(query: str, top_k: int = 5):

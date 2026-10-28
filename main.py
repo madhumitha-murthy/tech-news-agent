@@ -5,11 +5,11 @@ import time
 
 from dotenv import load_dotenv
 
-from agents.emailer import send_email
-from agents.fetcher import fetch_all
-from agents.filter import filter_articles
-from agents.storer import store_articles
-from agents.summariser import summarise_all
+from pipeline.emailer import send_email
+from pipeline.fetcher import fetch_all
+from pipeline.filter import filter_articles
+from pipeline.storer import store_articles
+from pipeline.summariser import summarise_all
 from metrics.tracker import PipelineMetrics
 
 load_dotenv()

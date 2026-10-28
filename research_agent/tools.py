@@ -21,7 +21,7 @@ class Tool:
 # --- Tool implementations ---
 
 def search_articles(query: str, top_k: int = 5) -> list[dict]:
-    from agents.retriever import retrieve
+    from pipeline.retriever import retrieve
     return retrieve(query, top_k=max(1, min(int(top_k), MAX_RESULTS)))
 
 
@@ -48,12 +48,12 @@ def search_arxiv(query: str, max_results: int = 5) -> list[dict]:
 
 
 def summarise(text: str) -> str:
-    from agents.summariser import summarise_article
+    from pipeline.summariser import summarise_article
     return summarise_article({"title": "", "summary": text})
 
 
 def compare_articles(titles: list[str]) -> list[dict]:
-    from agents.retriever import retrieve
+    from pipeline.retriever import retrieve
     results = []
     for t in titles[:3]:
         hits = retrieve(t, top_k=1)

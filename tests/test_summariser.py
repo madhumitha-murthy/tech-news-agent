@@ -7,7 +7,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 from unittest.mock import MagicMock, patch
 
-from agents.summariser import summarise_all, summarise_article
+from pipeline.summariser import summarise_all, summarise_article
 
 SAMPLE_ARTICLE = {
     "title": "OpenAI releases GPT-5",
@@ -62,7 +62,7 @@ def test_summarise_all_adds_ai_summary():
     mock_google, mock_genai = _mock_google("This is a test summary.")
 
     with patch.dict("sys.modules", {"google": mock_google, "google.genai": mock_genai}), \
-         patch("agents.summariser.time.sleep"):
+         patch("pipeline.summariser.time.sleep"):
         result = summarise_all(articles)
 
     assert all("ai_summary" in a for a in result)
@@ -73,7 +73,7 @@ def test_summarise_all_returns_same_count():
     mock_google, mock_genai = _mock_google("Summary.")
 
     with patch.dict("sys.modules", {"google": mock_google, "google.genai": mock_genai}), \
-         patch("agents.summariser.time.sleep"):
+         patch("pipeline.summariser.time.sleep"):
         result = summarise_all(articles)
 
     assert len(result) == 5

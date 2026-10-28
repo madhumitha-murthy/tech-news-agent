@@ -7,7 +7,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 from unittest.mock import MagicMock, patch
 
-from agents.emailer import build_html, send_email
+from pipeline.emailer import build_html, send_email
 
 SAMPLE_ARTICLES = [
     {
@@ -43,7 +43,7 @@ def test_build_html_contains_summaries():
 
 
 def test_send_email_success():
-    with patch("agents.emailer.smtplib.SMTP_SSL") as mock_smtp:
+    with patch("pipeline.emailer.smtplib.SMTP_SSL") as mock_smtp:
         mock_server = MagicMock()
         mock_smtp.return_value.__enter__.return_value = mock_server
 
@@ -60,7 +60,7 @@ def test_send_email_success():
 
 def test_send_email_raises_on_failure():
     import pytest
-    with patch("agents.emailer.smtplib.SMTP_SSL") as mock_smtp:
+    with patch("pipeline.emailer.smtplib.SMTP_SSL") as mock_smtp:
         mock_smtp.side_effect = Exception("SMTP connection failed")
 
         with patch.dict(os.environ, {

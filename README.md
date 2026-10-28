@@ -263,7 +263,7 @@ make format        # auto-format
 
 ```
 tech-news-agent/
-├── agents/                    # Daily pipeline modules
+├── pipeline/                  # Daily news pipeline (not agentic)
 │   ├── fetcher.py             # fetch from ArXiv & RSS feeds
 │   ├── filter.py              # keyword scoring & ranking
 │   ├── summariser.py          # Gemini summarisation
