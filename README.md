@@ -6,7 +6,7 @@
 ![Docker](https://img.shields.io/badge/docker-ready-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
-An end-to-end **agentic AI pipeline** that fetches, filters, summarises, and delivers a daily digest of AI & tech news to your inbox — fully automated, scheduled, and containerised.
+An end-to-end **AI news pipeline** that fetches, filters, summarises, and delivers a daily digest of AI & tech news to your inbox — fully automated, scheduled, and containerised — plus a **tool-calling research agent** (LangGraph) that answers questions by deciding which tools to use.
 
 ---
 
@@ -17,6 +17,7 @@ An end-to-end **agentic AI pipeline** that fetches, filters, summarises, and del
 - **AI summarisation** — Gemini 2.0 Flash (free tier) generates 2–3 line summaries per article
 - **Beautiful HTML email** — styled digest delivered via Gmail SMTP at 11:55 PM SGT daily
 - **RAG query interface** — ask questions over stored articles using semantic search + Gemini
+- **Research agent** — LangGraph agent that chooses between 4 tools (article search, ArXiv search, summarise, compare), with a tool-call budget, grounding check and step-by-step traces
 - **Vector store** — ChromaDB + Sentence Transformers for local semantic search
 - **Pipeline metrics** — tracks fetch counts, filter rates, summary success, delivery status
 - **Evaluation report** — historical analysis across all runs
@@ -124,6 +125,58 @@ released Cowork, a Claude Desktop agent for file management [2]...
     TechCrunch AI | Score: 0.91
     https://techcrunch.com/...
 ```
+
+---
+
+## Research Agent
+
+The daily pipeline always runs the same five steps. The research agent is different: **the model decides** which tools to call, in what order, and when it has enough to answer.
+
+```mermaid
+flowchart LR
+    Q([Question]) --> A[Agent<br/>Gemini decides]
+    A -- tool calls --> T[Tools<br/>validate + run]
+    T -- results --> A
+    A -- final answer --> G{Grounding check}
+    G -- supported --> Ans([Answer + sources])
+    G -- not supported --> R([Refusal])
+```
+
+**Tools** (`research_agent/tools.py`)
+
+| Tool | What it does |
+|---|---|
+| `search_articles` | Semantic search over articles stored by the daily pipeline (ChromaDB) |
+| `search_arxiv` | Live ArXiv search in cs.AI, cs.CL and cs.LG |
+| `summarise` | 2–3 sentence summary with Gemini |
+| `compare_articles` | Fetches 2–3 stored articles by title, side by side |
+
+**Run it**
+
+```bash
+python main.py                                   # fill the vector store first
+python -m research_agent.run "What's new in AI agents this week?"
+```
+
+Each run prints the tools called, the answer and its sources, and saves a full trace to `results/traces/`.
+
+**Evaluate it**
+
+```bash
+python -m eval.run_eval      # 20 questions in eval/questions.json
+```
+
+Writes `results/metrics.json` and `results/eval_details.csv`: grounded-answer rate, correct-refusal rate on out-of-scope questions, tool-selection accuracy, average tool calls and latency. These measure behaviour; the CSV includes every answer for checking correctness by hand.
+
+**Design decisions**
+
+- **Explicit LangGraph graph, not a prebuilt agent:** every node (agent, tools, grounding) is visible and testable.
+- **Our code runs the tools, not the SDK:** each call is validated against its schema, errors go back to the model instead of crashing, and every step is traced.
+- **Tool-call budget (6):** stops runaway loops and cost; once spent, the model must answer from what it has.
+- **Grounding check:** each answer sentence is compared with the retrieved sources using the same embedding model as the vector store; answers with too little support are replaced by a refusal. This is a cheap proxy, not a fact-checker.
+- **Tests without API calls:** `tests/test_research_agent.py` uses a scripted fake model to test the loop, the budget, tool errors and refusals.
+
+**Results:** run `python -m eval.run_eval` and see `results/metrics.json`.
 
 ---
 

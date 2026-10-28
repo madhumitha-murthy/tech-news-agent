@@ -5,3 +5,4 @@ apscheduler
 arxiv
 chromadb
 sentence-transformers
+langgraph
