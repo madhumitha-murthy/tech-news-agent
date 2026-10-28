@@ -1,0 +1,22 @@
+[
+  {"id": "news-01", "question": "What are the latest developments in AI agents?", "category": "news", "expected_tools": ["search_articles"], "answerable": true},
+  {"id": "news-02", "question": "What has Anthropic announced recently?", "category": "news", "expected_tools": ["search_articles"], "answerable": true},
+  {"id": "news-03", "question": "What recent news is there about OpenAI?", "category": "news", "expected_tools": ["search_articles"], "answerable": true},
+  {"id": "news-04", "question": "What is new with Google DeepMind?", "category": "news", "expected_tools": ["search_articles"], "answerable": true},
+  {"id": "news-05", "question": "What is happening in Singapore's tech or AI scene?", "category": "news", "expected_tools": ["search_articles"], "answerable": true},
+  {"id": "news-06", "question": "Are there any recent stories about AI coding assistants?", "category": "news", "expected_tools": ["search_articles"], "answerable": true},
+  {"id": "news-07", "question": "What recent news covers large language model releases?", "category": "news", "expected_tools": ["search_articles"], "answerable": true},
+  {"id": "news-08", "question": "Find recent articles about AI safety or regulation and summarise the main points.", "category": "news", "expected_tools": ["search_articles"], "answerable": true},
+  {"id": "research-01", "question": "Find recent research papers on retrieval-augmented generation.", "category": "research", "expected_tools": ["search_arxiv"], "answerable": true},
+  {"id": "research-02", "question": "What recent papers study multi-agent LLM systems?", "category": "research", "expected_tools": ["search_arxiv"], "answerable": true},
+  {"id": "research-03", "question": "Are there recent papers on LoRA or parameter-efficient fine-tuning?", "category": "research", "expected_tools": ["search_arxiv"], "answerable": true},
+  {"id": "research-04", "question": "Find research on evaluating hallucinations in language models.", "category": "research", "expected_tools": ["search_arxiv"], "answerable": true},
+  {"id": "research-05", "question": "What recent work exists on tool use or function calling for LLMs?", "category": "research", "expected_tools": ["search_arxiv"], "answerable": true},
+  {"id": "compare-01", "question": "Find two recent articles about AI agents and compare what each one reports.", "category": "compare", "expected_tools": ["search_articles", "compare_articles"], "answerable": true},
+  {"id": "compare-02", "question": "Compare two recent stories about large language models.", "category": "compare", "expected_tools": ["search_articles", "compare_articles"], "answerable": true},
+  {"id": "mixed-01", "question": "What do recent news articles and research papers say about AI agents?", "category": "mixed", "expected_tools": ["search_articles", "search_arxiv"], "answerable": true},
+  {"id": "out-01", "question": "What is the best recipe for Hainanese chicken rice?", "category": "out_of_scope", "expected_tools": [], "answerable": false},
+  {"id": "out-02", "question": "What is the weather forecast for Singapore tomorrow?", "category": "out_of_scope", "expected_tools": [], "answerable": false},
+  {"id": "out-03", "question": "What was the final score of last night's Premier League match?", "category": "out_of_scope", "expected_tools": [], "answerable": false},
+  {"id": "out-04", "question": "What is my bank account balance?", "category": "out_of_scope", "expected_tools": [], "answerable": false}
+]

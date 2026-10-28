@@ -9,7 +9,7 @@ from metrics.relevance_drift import check_relevance_drift, log_query_scores
 
 load_dotenv()
 
-MODEL = "gemini-2.0-flash"
+MODEL = "gemini-3.8-flash"
 
 
 def generate_answer(query: str, articles: list) -> str:
