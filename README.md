@@ -6,7 +6,7 @@
 ![Docker](https://img.shields.io/badge/docker-ready-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
-An end-to-end **agentic AI pipeline** that fetches, filters, summarises, and delivers a daily digest of AI & tech news to your inbox — fully automated, scheduled, and containerised.
+An end-to-end AI system with two parts: a **daily news pipeline** that fetches, filters, summarises, and emails a digest of AI & tech news, and a **ReAct research agent** (LangGraph + Gemini) that answers questions over collected articles with tool calling, grounding checks, and hallucination refusal.
 
 ---
 
@@ -14,12 +14,14 @@ An end-to-end **agentic AI pipeline** that fetches, filters, summarises, and del
 
 - **Multi-source fetching** — ArXiv, HackerNews, TechCrunch, VentureBeat, Anthropic/OpenAI/DeepMind blogs
 - **Smart filtering** — keyword-based relevance scoring across Agentic AI, LLMs, NLP, Singapore tech
-- **AI summarisation** — Gemini 2.0 Flash (free tier) generates 2–3 line summaries per article
+- **AI summarisation** — Gemini 3.8 Flash (free tier) generates 2–3 line summaries per article
 - **Beautiful HTML email** — styled digest delivered via Gmail SMTP at 11:55 PM SGT daily
+- **Agentic research assistant** — LangGraph ReAct agent with Gemini function calling, 4 tools, grounding check
 - **RAG query interface** — ask questions over stored articles using semantic search + Gemini
 - **Vector store** — ChromaDB + Sentence Transformers for local semantic search
+- **Grounding & hallucination guard** — embedding-based check refuses answers not supported by sources
+- **Agent evaluation suite** — 20 test questions measuring grounded answer rate, refusal accuracy, tool selection
 - **Pipeline metrics** — tracks fetch counts, filter rates, summary success, delivery status
-- **Evaluation report** — historical analysis across all runs
 - **Fully containerised** — Docker + Kubernetes CronJob ready
 - **CI/CD** — GitHub Actions for lint, test, Docker build & push to GHCR
 
@@ -33,7 +35,7 @@ An end-to-end **agentic AI pipeline** that fetches, filters, summarises, and del
 │                                                     │
 │  ┌──────────┐   ┌──────────┐   ┌────────────────┐  │
 │  │ Fetcher  │──▶│  Filter  │──▶│  Summariser    │  │
-│  │          │   │          │   │  (Gemini 2.0)  │  │
+│  │          │   │          │   │  (Gemini 3.8)  │  │
 │  │ ArXiv    │   │ Keyword  │   └───────┬────────┘  │
 │  │ RSS Feeds│   │ Scoring  │           │           │
 │  │ HN/TC/VB │   │ Top N    │   ┌───────▼────────┐  │
@@ -50,6 +52,44 @@ An end-to-end **agentic AI pipeline** that fetches, filters, summarises, and del
 └─────────────────────────────────────────────────────┘
 ```
 
+### Research Agent (ReAct Loop)
+
+```
+User question
+     │
+     ▼
+┌─────────────────────────────────────────────┐
+│  AGENT NODE (Gemini 3.8 Flash)              │
+│  Sees: question + history + 4 tool schemas  │
+│  Decides: call a tool OR give final answer  │
+└──────────┬──────────────────┬───────────────┘
+           │                  │
+      tool calls         final answer
+           │                  │
+           ▼                  ▼
+    ┌─────────────┐   ┌────────────────────┐
+    │ TOOLS NODE  │   │ GROUNDING NODE     │
+    │ Validates & │   │ Splits answer into │
+    │ executes    │   │ sentences, checks  │
+    │ (budget: 6) │   │ cosine sim vs      │
+    └──────┬──────┘   │ sources (>= 60%)   │
+           │          └─────────┬──────────┘
+           ▼                    │
+      back to             supported?
+      AGENT NODE         yes/       \no
+                        return     refuse
+                        answer     answer
+```
+
+**Tools available to the agent:**
+
+| Tool | What it does | When the agent uses it |
+|---|---|---|
+| `search_articles` | Semantic search over ChromaDB | News questions |
+| `search_arxiv` | Live ArXiv paper search | Research questions |
+| `summarise` | Gemini summarises long text | Verbose results |
+| `compare_articles` | Fetch articles by title for comparison | Comparison questions |
+
 ---
 
 ## Tech Stack
@@ -57,7 +97,8 @@ An end-to-end **agentic AI pipeline** that fetches, filters, summarises, and del
 | Layer | Technology |
 |---|---|
 | Language | Python 3.12 |
-| AI Summarisation & QA | Google Gemini 2.0 Flash (free tier) |
+| AI / LLM | Google Gemini 3.8 Flash (free tier) |
+| Agent Framework | LangGraph (state graph, ReAct loop) |
 | News Sources | feedparser, arxiv |
 | Vector Store | ChromaDB (local, persistent) |
 | Embeddings | Sentence Transformers (all-MiniLM-L6-v2) |
@@ -97,32 +138,40 @@ python main.py
 python scheduler.py
 ```
 
-### 5. Query articles on demand (RAG)
+### 5. Ask the research agent a question
+```bash
+python -m research_agent.run "What's new in AI agents this week?"
+```
+```
+============================================================
+  [search_articles] {'query': 'AI agents', 'top_k': 5} -> 5 results (ok)
+============================================================
+Based on recent news and research:
+
+* Google launched a new developer platform allowing businesses to bring
+  their services directly into Gemini and Search as agents alter how
+  users discover and interact with web services.
+* The paper "GEPA-Curator" introduces methods for curated learning and
+  reflective prompt optimization to help LLM agents sustain multi-turn
+  interactions in complex environments.
+============================================================
+
+Sources:
+  - GEPA-Curator: Curated Learning for Self Improving Agents (ArXiv)
+  - As AI agents reshape the web, Google opens Gemini... (TechCrunch AI)
+
+Grounding: {'grounded': True, 'supported_fraction': 0.8}
+```
+
+### 6. Run the agent evaluation suite
+```bash
+python -m eval.run_eval
+# Results saved to results/metrics.json and results/eval_details.csv
+```
+
+### 7. Legacy RAG query interface
 ```bash
 python query.py
-```
-```
-🤖 Tech News Agent — RAG Query Interface
-Type your question or 'quit' to exit.
-
-❓ Ask: what is the latest on agentic AI?
-
-🔍 Searching for: 'what is the latest on agentic AI?'
-📚 Found 5 relevant articles
-
-==============================================================
-💬 Answer:
-==============================================================
-Based on recent articles, agentic AI is advancing rapidly [1][2].
-Salesforce launched a new Slackbot AI agent [1], while Anthropic
-released Cowork, a Claude Desktop agent for file management [2]...
-
-==============================================================
-📰 Sources:
-==============================================================
-[1] Salesforce rolls out new Slackbot AI agent...
-    TechCrunch AI | Score: 0.91
-    https://techcrunch.com/...
 ```
 
 ---
@@ -214,35 +263,42 @@ make format        # auto-format
 
 ```
 tech-news-agent/
-├── agents/
-│   ├── fetcher.py          # fetch from ArXiv & RSS feeds
-│   ├── filter.py           # keyword scoring & ranking
-│   ├── summariser.py       # Gemini 2.0 Flash summarisation
-│   ├── storer.py           # embed & store articles in ChromaDB
-│   ├── retriever.py        # semantic search over stored articles
-│   └── emailer.py          # HTML email via Gmail SMTP
-├── vectorstore/            # persistent ChromaDB vector store
-├── query.py                # RAG query CLI interface
+├── agents/                    # Daily pipeline modules
+│   ├── fetcher.py             # fetch from ArXiv & RSS feeds
+│   ├── filter.py              # keyword scoring & ranking
+│   ├── summariser.py          # Gemini summarisation
+│   ├── storer.py              # embed & store in ChromaDB
+│   ├── retriever.py           # semantic search over stored articles
+│   └── emailer.py             # HTML email via Gmail SMTP
+├── research_agent/            # Agentic research assistant
+│   ├── tools.py               # 4 tools + JSON schemas + validation
+│   ├── llm.py                 # Gemini function calling wrapper
+│   ├── graph.py               # LangGraph state graph (ReAct loop)
+│   ├── grounding.py           # hallucination guard (embedding similarity)
+│   └── run.py                 # CLI entry point
+├── eval/                      # Agent evaluation
+│   ├── questions.json         # 20 test questions (16 answerable + 4 OOS)
+│   └── run_eval.py            # run eval, compute metrics
 ├── metrics/
-│   ├── tracker.py          # per-run metrics collection
-│   ├── evaluator.py        # historical evaluation report
-│   └── data/               # saved JSON run logs
+│   ├── tracker.py             # per-run pipeline metrics
+│   ├── evaluator.py           # historical evaluation report
+│   ├── relevance_drift.py     # retrieval drift detection
+│   └── data/                  # saved JSON run logs
 ├── tests/
 │   ├── test_filter.py
 │   ├── test_summariser.py
 │   ├── test_emailer.py
-│   └── test_metrics.py
+│   ├── test_metrics.py
+│   └── test_research_agent.py # 9 agent tests (FakeModel, no API)
 ├── k8s/
-│   ├── cronjob.yaml        # k8s CronJob (11:55 PM SGT)
+│   ├── cronjob.yaml
 │   ├── configmap.yaml
 │   └── secret.yaml
-├── .github/workflows/
-│   ├── ci.yml              # lint + test on every PR
-│   └── cd.yml              # build + push Docker on merge
-├── config.py               # all settings
-├── main.py                 # pipeline orchestrator
-├── scheduler.py            # APScheduler daily runner
-├── Dockerfile              # multi-stage production build
+├── config.py                  # all settings
+├── main.py                    # pipeline orchestrator
+├── scheduler.py               # APScheduler daily runner
+├── query.py                   # legacy RAG query CLI
+├── Dockerfile
 ├── docker-compose.yml
 ├── Makefile
 └── requirements.txt
@@ -252,11 +308,13 @@ tech-news-agent/
 
 ## Roadmap
 
+- [x] Agentic research assistant with LangGraph
+- [x] Grounding check (hallucination guard)
+- [x] Agent evaluation suite (20 questions, 4 metrics)
+- [ ] Multi-agent upgrade (planner + parallel researchers + critic)
 - [ ] Reddit source integration
-- [ ] Telegram bot delivery option
 - [ ] Web dashboard for metrics visualisation
 - [ ] Personalisation based on reading history
-- [ ] Integration with job hunting agent
 
 ---
 
